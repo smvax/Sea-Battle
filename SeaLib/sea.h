@@ -67,35 +67,73 @@ public:
     friend bool is_collision(char);
 };
 
+class Ship;
+
+void parse(const std::string&, Ship&);
+bool is_collision(int, Position, Direction);
+
 class Ship {
     int _size;
-    Position _coord;
+    Position _position;
     Direction _direction;
 
-    bool is_collision(int, Position, Direction) const noexcept;
-
 public:
+    Ship() = delete;
+    Ship(const Ship&) = delete;
+    Ship(int, Position, Direction);
+    Ship(int, char, int, char);
+    Ship(const std::string&);
+
     inline int size() const noexcept {
         return _size;
+    }
+    inline int row() const noexcept {
+        return _position.row();
+    }
+    inline int col() const noexcept {
+        return _position.col();
+    }
+    inline Position position() const noexcept {
+        return _position;
     }
     inline Direction direction() const noexcept {
         return _direction;
     }
-    inline int row() const noexcept {
-        return _coord.row();
-    }
-    inline int col() const noexcept {
-        return _coord.col();
+
+    inline void size(int size) {
+        if (is_collision(size, _position, _direction)) {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+        _size = size;
     }
 
-    Ship() = delete;
-    Ship(const Ship&) = delete;
-    Ship(int, Position, Direction);
-    Ship(int, Position);
-    Ship(int, char, int, char);
+    inline void direction(Direction direction) {
+        if (is_collision(_size, _position, direction)) {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+        _direction = direction;
+    }
 
-    void rotate();
+    inline void position(Position position) {
+        if (is_collision(_size, position, _direction)) {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+        _position = position;
+    }
+
+    void row(int);
+    void col(int);
+    void col(char);
+    void direction(char);
+
+    friend void parse(const std::string&, Ship&);
+    friend bool is_collision(int, Position, Direction);
+
+    Ship& operator=(const Ship&);
 };
+
+void parse(const std::string&, Ship&);
+bool is_collision(int, Position, Direction);
 
 class GameField {
     char** _field;
