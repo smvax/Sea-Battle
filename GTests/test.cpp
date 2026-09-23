@@ -333,3 +333,97 @@ TEST(ShipTest, TestParameterizedConstructorInvalid) {
 }
 
 //-------------GAMEFIELD
+
+TEST(GameFieldTest, TestDefaultConstructor) {
+    GameField field;
+    std::string hidden_view = to_string(field, false);
+    EXPECT_FALSE(hidden_view.empty());
+}
+
+TEST(GameFieldTest, TestSetShipValidHorizontal) {
+    GameField field;
+    Ship ship("3 H 1 A");
+
+    EXPECT_NO_THROW(field.set(ship));
+
+    std::string visible_view = to_string(field, true);
+    EXPECT_NE(visible_view.find('*'), std::string::npos);
+}
+
+TEST(GameFieldTest, TestSetShipValidVertical) {
+    GameField field;
+    Ship ship("2 V 4 E");
+
+    EXPECT_NO_THROW(field.set(ship));
+}
+
+TEST(GameFieldTest, TestSetShipCollisionException) {
+    GameField field;
+    Ship ship1("3 H 2 B");
+    field.set(ship1);
+
+    Ship ship_collision("2 V 1 C");
+    EXPECT_TRUE(is_collision(field, ship_collision));
+    EXPECT_THROW(field.set(ship_collision), std::logic_error);
+}
+
+TEST(GameFieldTest, TestSetMoveMissed) {
+    GameField field;
+
+    EXPECT_EQ(field.set(1, 'A'), State::Missed);
+    EXPECT_EQ(field.set(5, 'e'), State::Missed);
+}
+
+TEST(GameFieldTest, TestSetMoveHitAndDestroySingleDeck) {
+    GameField field;
+    Ship ship("1 H 3 C");
+    field.set(ship);
+
+    EXPECT_EQ(field.set(3, 'C'), State::BoatDestroyed);
+}
+
+TEST(GameFieldTest, TestSetMoveHitAndDestroyMultiDeck) {
+    GameField field;
+    Ship ship("2 V 5 E");
+    field.set(ship);
+
+    EXPECT_EQ(field.set(5, 'E'), State::Hit);
+    EXPECT_EQ(field.set(6, 'E'), State::DestroyersDestroyed);
+}
+
+TEST(GameFieldTest, TestSetMoveRepeatMoveException) {
+    GameField field;
+    field.set(1, 'A');
+
+    EXPECT_THROW(field.set(1, 'A'), std::logic_error);
+}
+
+TEST(GameFieldTest, TestSetMoveInvalidBoundaryException) {
+    GameField field;
+
+    EXPECT_THROW(field.set(0, 'A'), std::logic_error);
+    EXPECT_THROW(field.set(11, 'A'), std::logic_error);
+    EXPECT_THROW(field.set(1, '@'), std::logic_error);
+    EXPECT_THROW(field.set(1, 'K'), std::logic_error);
+}
+
+TEST(GameFieldTest, TestCheckDestroyNotFullyDestroyed) {
+    GameField field;
+    Ship ship("3 H 4 D");
+    field.set(ship);
+
+    field.set(4, 'D');
+    EXPECT_EQ(field.check_destroy(3, 3), 0);
+}
+
+TEST(GameFieldTest, TestToStringShowFlag) {
+    GameField field;
+    Ship ship("1 H 1 A");
+    field.set(ship);
+
+    std::string hidden = to_string(field, false);
+    std::string visible = to_string(field, true);
+
+    EXPECT_NE(hidden, visible);
+}
+

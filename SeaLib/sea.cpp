@@ -313,7 +313,7 @@ State GameField::set(int row, char col) {
     if (row < 1 || row > _n) {
         throw std::logic_error("Invalid input: incorrect move");
     }
-    int colIdx = col - 'A' + 1;
+    int colIdx = std::toupper(col) - 'A' + 1;
     if (colIdx < 1 || colIdx > _m) {
         throw std::logic_error("Invalid input: incorrect move");
     }
@@ -409,7 +409,12 @@ std::string to_string(const GameField& field, bool show) {
 
         for (int j = 0; j < field._m; j++) {
             char cell = field._field[i][j];
-            result += cell;
+            if (cell == '*' && !show) {
+                result += ' ';
+            }
+            else {
+                result += cell;
+            }
             if (j < field._m - 1) result += '|';
         }
         result += "|\n";
@@ -430,7 +435,7 @@ bool is_collision(const GameField& field, const Ship& ship) {
     int size = ship.size();
     Direction dir = ship.direction();
 
-    if (row < 0 || row >= field._n || col < 0 || col >= field._m || size < 1 || size > 4) {
+    if (row < 0 || row >= field._n || col < 0 || col >= field._m || size < 1) {
         return true;
     }
 
