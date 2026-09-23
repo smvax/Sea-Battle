@@ -1,4 +1,7 @@
 #pragma once
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 enum Direction { Horizontal, Vertical };
 
@@ -31,7 +34,7 @@ public:
     Position();
     Position(int, int);
     Position(const Position&);
-    Position(const std::string);
+    Position(const std::string&);
 
     friend std::string to_string(const Position&);
     friend Position parse(const std::string&);

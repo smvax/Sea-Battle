@@ -1,5 +1,4 @@
-﻿#include <iostream>
-#include "sea.h"
+﻿#include "sea.h"
 
 int main()
 {
