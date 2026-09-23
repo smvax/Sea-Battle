@@ -331,3 +331,5 @@ TEST(ShipTest, TestParameterizedConstructorInvalid) {
     EXPECT_THROW(Ship(5, Position(1, 1), Direction::Horizontal), std::logic_error);
     EXPECT_THROW(Ship(2, Position(10, 10), Direction::Horizontal), std::logic_error);
 }
+
+//-------------GAMEFIELD

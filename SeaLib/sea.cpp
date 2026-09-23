@@ -269,3 +269,5 @@ bool is_collision(int size, Position position, Direction direction) {
 
     return false;
 }
+
+//---------GAMEFIELD

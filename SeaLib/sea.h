@@ -6,6 +6,8 @@
 
 enum Direction { Horizontal, Vertical };
 
+//---------POSITION
+
 class Position;
 
 std::string to_string(const Position&);
@@ -66,6 +68,8 @@ public:
     friend bool is_collision(int);
     friend bool is_collision(char);
 };
+
+//-----------SHIP
 
 class Ship;
 
@@ -132,8 +136,7 @@ public:
     Ship& operator=(const Ship&);
 };
 
-void parse(const std::string&, Ship&);
-bool is_collision(int, Position, Direction);
+//---------GAMEFIELD
 
 class GameField {
     char** _field;
