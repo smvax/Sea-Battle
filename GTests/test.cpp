@@ -327,7 +327,7 @@ TEST(ShipTest, TestParseMethodInvalid) {
     EXPECT_THROW(parse("5 H 4 B", ship), std::logic_error);
 }
 
-TEST(ShipTest, TestParameterizedConstructorInvalid) {
+TEST(ShipTest, TestInitConstructorInvalid) {
     EXPECT_THROW(Ship(5, Position(1, 1), Direction::Horizontal), std::logic_error);
     EXPECT_THROW(Ship(2, Position(10, 10), Direction::Horizontal), std::logic_error);
 }
@@ -362,9 +362,9 @@ TEST(GameFieldTest, TestSetShipCollisionException) {
     Ship ship1("3 H 2 B");
     field.set(ship1);
 
-    Ship ship_collision("2 V 1 C");
-    EXPECT_TRUE(is_collision(field, ship_collision));
-    EXPECT_THROW(field.set(ship_collision), std::logic_error);
+    Ship ship_collision1("2 V 1 C");
+    EXPECT_TRUE(is_collision(field, ship_collision1));
+    EXPECT_THROW(field.set(ship_collision1), std::logic_error);
 }
 
 TEST(GameFieldTest, TestSetMoveMissed) {

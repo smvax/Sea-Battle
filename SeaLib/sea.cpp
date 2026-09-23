@@ -435,7 +435,7 @@ bool is_collision(const GameField& field, const Ship& ship) {
     int size = ship.size();
     Direction dir = ship.direction();
 
-    if (row < 0 || row >= field._n || col < 0 || col >= field._m || size < 1) {
+    if (row < 0 || row >= field._n || col < 0 || col >= field._m || size < 1 || size > 4) {
         return true;
     }
 
