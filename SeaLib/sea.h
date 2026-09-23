@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <ctime>
+#include <clocale>
 
 enum Direction { Horizontal, Vertical };
 
