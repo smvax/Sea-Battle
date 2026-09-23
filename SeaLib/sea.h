@@ -136,6 +136,10 @@ public:
     Ship& operator=(const Ship&);
 };
 
+//-------------------
+
+enum State { Missed, BoatDestroyed, DestroyersDestroyed, CruisersDestroyed, BattleshipDestroyed, Hit };
+
 //---------GAMEFIELD
 
 class GameField {
@@ -143,18 +147,14 @@ class GameField {
     const int _n;   //height (rows count)
     const int _m;   //width (columns count)
 
-    void create();
-
 public:
     GameField();
-    GameField(char**, int, int);
-    GameField(int, int);
-    GameField(const GameField&);
-
     ~GameField();
 
-    void set(int, char);
-    char get(int, char) const;
+    void set(const Ship&);
+    State set(int, char);
+    int check_destroy(int, int);
 
-    friend std::string to_string(const GameField&);
+    friend std::string to_string(const GameField& field, bool show = false);
+    friend bool is_collision(const GameField&, const Ship&);
 };

@@ -271,3 +271,190 @@ bool is_collision(int size, Position position, Direction direction) {
 }
 
 //---------GAMEFIELD
+
+GameField::GameField() : _n(10), _m(10) {
+    _field = new char* [_n];
+    for (int i = 0; i < _n; i++) {
+        _field[i] = new char[_m];
+        for (int j = 0; j < _m; j++) {
+            _field[i][j] = ' ';
+        }
+    }
+}
+
+GameField::~GameField() {
+    for (int i = 0; i < _n; i++) {
+        delete[] _field[i];
+    }
+    delete[] _field;
+}
+
+void GameField::set(const Ship& ship) {
+    if (is_collision(*this, ship)) {
+        throw std::logic_error("Invalid input: incorrect field");
+    }
+
+    int row = ship.row() - 1;
+    int col = ship.col() - 1;
+    int size = ship.size();
+    Direction dir = ship.direction();
+
+    for (int i = 0; i < size; i++) {
+        if (dir == Direction::Horizontal) {
+            _field[row][col + i] = '*';
+        }
+        else {
+            _field[row + i][col] = '*';
+        }
+    }
+}
+
+State GameField::set(int row, char col) {
+    if (row < 1 || row > _n) {
+        throw std::logic_error("Invalid input: incorrect move");
+    }
+    int colIdx = col - 'A' + 1;
+    if (colIdx < 1 || colIdx > _m) {
+        throw std::logic_error("Invalid input: incorrect move");
+    }
+
+    int r = row - 1;
+    int c = colIdx - 1;
+
+    if (_field[r][c] == '.' || _field[r][c] == 'X') {
+        throw std::logic_error("Invalid input: incorrect move");
+    }
+
+    if (_field[r][c] == ' ') {
+        _field[r][c] = '.';
+        return State::Missed;
+    }
+
+    if (_field[r][c] == '*') {
+        _field[r][c] = 'X';
+
+        int shipSize = check_destroy(r, c);
+
+        switch (shipSize) {
+        case 1:  return State::BoatDestroyed;
+        case 2:  return State::DestroyersDestroyed;
+        case 3:  return State::CruisersDestroyed;
+        case 4:  return State::BattleshipDestroyed;
+        default: return State::Hit;
+        }
+    }
+
+    return State::Missed;
+}
+
+int GameField::check_destroy(int row, int col) {
+    int start_c = col, end_c = col;
+    while (start_c > 0 && (_field[row][start_c - 1] == 'X' || _field[row][start_c - 1] == '*')) start_c--;
+    while (end_c < _m - 1 && (_field[row][end_c + 1] == 'X' || _field[row][end_c + 1] == '*')) end_c++;
+
+    int start_r = row, end_r = row;
+    while (start_r > 0 && (_field[start_r - 1][col] == 'X' || _field[start_r - 1][col] == '*')) start_r--;
+    while (end_r < _n - 1 && (_field[end_r + 1][col] == 'X' || _field[end_r + 1][col] == '*')) end_r++;
+
+    int size = 1;
+    bool allDestroyed = true;
+
+    if (end_c > start_c) {
+        size = end_c - start_c + 1;
+        for (int c = start_c; c <= end_c; c++) {
+            if (_field[row][c] == '*') {
+                allDestroyed = false;
+            }
+        }
+    }
+    else if (end_r > start_r) {
+        size = end_r - start_r + 1;
+        for (int r = start_r; r <= end_r; r++) {
+            if (_field[r][col] == '*') {
+                allDestroyed = false;
+            }
+        }
+    }
+    else {
+        size = 1;
+        if (_field[row][col] == '*') {
+            allDestroyed = false;
+        }
+    }
+
+    return allDestroyed ? size : 0;
+}
+
+std::string to_string(const GameField& field, bool show) {
+    std::string result = "  |";
+
+    for (int j = 0; j < field._m; j++) {
+        result += (char)('A' + j);
+        if (j < field._m - 1) result += ' ';
+    }
+    result += "|\n";
+
+    result += "  +";
+    for (int j = 0; j < field._m * 2 - 1; j++) {
+        result += '-';
+    }
+    result += "+\n";
+
+    for (int i = 0; i < field._n; i++) {
+        result += std::to_string(i + 1);
+        if (i + 1 < 10) {
+            result += ' ';
+        }
+        result += '|';
+
+        for (int j = 0; j < field._m; j++) {
+            char cell = field._field[i][j];
+            result += cell;
+            if (j < field._m - 1) result += '|';
+        }
+        result += "|\n";
+    }
+
+    result += "  +";
+    for (int j = 0; j < field._m * 2 - 1; j++) {
+        result += '-';
+    }
+    result += "+\n";
+
+    return result;
+}
+
+bool is_collision(const GameField& field, const Ship& ship) {
+    int row = ship.row() - 1;
+    int col = ship.col() - 1;
+    int size = ship.size();
+    Direction dir = ship.direction();
+
+    if (row < 0 || row >= field._n || col < 0 || col >= field._m || size < 1 || size > 4) {
+        return true;
+    }
+
+    if (dir == Direction::Horizontal) {
+        if (col + size > field._m) return true;
+    }
+    else {
+        if (row + size > field._n) return true;
+    }
+
+    int min_r = row - 1;
+    int max_r = (dir == Direction::Vertical) ? (row + size) : (row + 1);
+    int min_c = col - 1;
+    int max_c = (dir == Direction::Horizontal) ? (col + size) : (col + 1);
+
+    for (int r = min_r; r <= max_r; r++) {
+        for (int c = min_c; c <= max_c; c++) {
+            if (r >= 0 && r < field._n && c >= 0 && c < field._m) {
+                if (field._field[r][c] == '*' || field._field[r][c] == 'X') {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
