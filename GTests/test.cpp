@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "sea.h"
+#include "game.h"
 
 //-----------POSITION
 
@@ -425,5 +426,118 @@ TEST(GameFieldTest, TestToStringShowFlag) {
     std::string visible = to_string(field, true);
 
     EXPECT_NE(hidden, visible);
+}
+
+//--------PLAYER
+
+TEST(PlayerTest, TestInitialState) {
+    Player player;
+    EXPECT_FALSE(player.check_ready());
+    EXPECT_TRUE(player.check_lose());
+}
+
+TEST(PlayerTest, TestSetShipAndLimits) {
+    Player player;
+
+    EXPECT_NO_THROW(player.set_ship(Ship("1 H 1 A")));
+    EXPECT_NO_THROW(player.set_ship(Ship("1 H 1 C")));
+    EXPECT_NO_THROW(player.set_ship(Ship("1 H 1 E")));
+    EXPECT_NO_THROW(player.set_ship(Ship("1 H 1 G")));
+
+    EXPECT_THROW(player.set_ship(Ship("1 H 1 I")), std::logic_error);
+}
+
+TEST(PlayerTest, TestSetShipInvalidSizeException) {
+    Player player;
+    EXPECT_THROW(player.set_ship(Ship(5, Position(1, 1), Direction::Horizontal)), std::logic_error);
+}
+
+TEST(PlayerTest, TestCheckReadyWhenFullyStocked) {
+    Player player;
+
+    //4 by 1
+    player.set_ship(Ship("1 H 1 A")); player.set_ship(Ship("1 H 1 C"));
+    player.set_ship(Ship("1 H 1 E")); player.set_ship(Ship("1 H 1 G"));
+    //3 by 2
+    player.set_ship(Ship("2 H 3 A")); player.set_ship(Ship("2 H 3 D"));
+    player.set_ship(Ship("2 H 3 G"));
+    //2 by 3
+    player.set_ship(Ship("3 H 5 A")); player.set_ship(Ship("3 H 5 E"));
+    //1 by 4
+    player.set_ship(Ship("4 H 7 A"));
+
+    EXPECT_TRUE(player.check_ready());
+    EXPECT_FALSE(player.check_lose());
+}
+
+TEST(PlayerTest, TestSetActionAndShipCounters) {
+    Player player;
+    player.set_ship(Ship("1 H 2 B"));
+
+    //elimnating:
+    State res = player.set_action(2, 'B');
+    EXPECT_EQ(res, State::BoatDestroyed);
+
+    //elimnated:
+    EXPECT_TRUE(player.check_lose());
+}
+
+TEST(PlayerTest, TestSetActionInvalidMoveException) {
+    Player player;
+    EXPECT_THROW(player.set_action(0, 'A'), std::logic_error);
+    EXPECT_THROW(player.set_action(1, '@'), std::logic_error);
+}
+
+//-------GAME
+
+class TestableGame : public Game {
+public:
+    void call_user_init(std::string s) { user_init(s); }
+    void call_computer_init(std::string s) { computer_init(s); }
+    State call_user_move(std::string s) { return user_move(s); }
+    State call_computer_move() { return computer_move(); }
+    bool call_is_end() { return is_end(); }
+};
+
+TEST(GameTest, TestGameInitialStateAndIsEnd) {
+    TestableGame game;
+    EXPECT_TRUE(game.call_is_end());
+}
+
+TEST(GameTest, TestUserAndComputerInitValid) {
+    TestableGame game;
+    EXPECT_NO_THROW(game.call_user_init("1 H 1 A"));
+    EXPECT_NO_THROW(game.call_computer_init("1 H 1 A"));
+}
+
+TEST(GameTest, TestInitInvalidFormatException) {
+    TestableGame game;
+    EXPECT_THROW(game.call_user_init("1 G 1 A"), std::logic_error);
+    EXPECT_THROW(game.call_computer_init("1 H 11 A"), std::logic_error);
+}
+
+TEST(GameTest, TestUserMoveScenarios) {
+    TestableGame game;
+    game.call_computer_init("1 H 4 D");
+
+    //out by ship
+    EXPECT_EQ(game.call_user_move("1 A"), State::Missed);
+
+    //hit the ship
+    EXPECT_EQ(game.call_user_move("4 D"), State::BoatDestroyed);
+}
+
+TEST(GameTest, TestUserMoveInvalidFormatException) {
+    TestableGame game;
+    EXPECT_THROW(game.call_user_move("invalid_string"), std::logic_error);
+    EXPECT_THROW(game.call_user_move("11 A"), std::logic_error);
+}
+
+TEST(GameTest, TestComputerMoveLogic) {
+    TestableGame game;
+    game.call_user_init("1 H 1 A");
+
+    State res = game.call_computer_move();
+    EXPECT_EQ(res, State::BoatDestroyed);
 }
 

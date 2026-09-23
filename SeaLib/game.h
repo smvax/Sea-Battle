@@ -23,6 +23,7 @@ public:
 //--------GAME
 
 class Game {
+protected: //for GTests
     Player _user;        //user field
     Player _computer;    //computer field
 
