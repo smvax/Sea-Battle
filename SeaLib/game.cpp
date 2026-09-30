@@ -9,11 +9,7 @@ Player::Player() {
 }
 
 void Player::set_ship(const Ship& ship) {
-    int size = ship.size();
-    if (size < 1 || size > CELL_COUNT) {
-        throw std::logic_error("Invalid input: incorrect field");
-    }
-    int index = size - 1;
+    int index = ship.size() - 1;
     if (_ships_counts[index] < _max_ships_counts[index] && !is_collision(_gamefield, ship)) {
         _gamefield.set(ship);
         _ships_counts[index]++;
@@ -23,11 +19,7 @@ void Player::set_ship(const Ship& ship) {
 }
 
 State Player::set_action(int row, char col) {
-    if (row < 1 || col < 'A') {
-        throw std::logic_error("Invalid input: incorrect move");
-    }
     State result = _gamefield.set(row, col);
-
     if (result == BoatDestroyed) {
         _ships_counts[0]--;
     }
@@ -125,7 +117,6 @@ State Game::computer_move() {
                 throw std::logic_error("Invalid input: incorrect field");
             }
         }
-
         if (_comp_diag == 1) {
             _comp_row++;
             _comp_col--;
@@ -142,12 +133,10 @@ State Game::computer_move() {
                 throw std::logic_error("Invalid input: incorrect field");
             }
         }
-
         if (_comp_diag == 2) {
             if (_comp_row >= 11) {
                 break;
             }
-
             _comp_col++;
             if (_comp_row == _comp_col || 11 - _comp_col == _comp_row) {
                 _comp_col++;
@@ -185,7 +174,6 @@ void Game::start() {
     std::string user_field_input;
     std::string comp_field_input;
     std::string empty_line;
-
     for (size_t i = 0; i < 10; i++) {
         std::getline(std::cin, user_field_input);
         try {
@@ -196,7 +184,6 @@ void Game::start() {
         }
     }
     std::getline(std::cin, empty_line);
-
     for (size_t i = 0; i < 10; i++) {
         std::getline(std::cin, comp_field_input);
         try {
@@ -209,10 +196,8 @@ void Game::start() {
     std::getline(std::cin, empty_line);
     show_game_window();
     std::cout << std::endl;
-
     bool user_turn = true;
     std::string turn_input;
-
     while (!is_end()) {
         if (user_turn) {
             std::getline(std::cin, turn_input);
@@ -237,9 +222,7 @@ void Game::start() {
             }
         }
     }
-
     show_game_window();
-
     if (_computer.check_lose()) {
         std::cout << std::endl << "USER WIN!\n";
     }
