@@ -40,18 +40,32 @@ void parse(const std::string& str, Position& pos) {
     int row = 0;
     char col = 0;
     size_t i = 0;
-    while (i < str.size() && std::isspace(str[i])) {
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
         i++;
     }
-    while (i < str.size() && std::isdigit(str[i])) {
+    bool has_row = false;
+    while (i < str.size() && std::isdigit(static_cast<unsigned char>(str[i]))) {
         row = row * 10 + (str[i] - '0');
         i++;
+        has_row = true;
     }
-    while (i < str.size() && std::isspace(str[i])) {
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
         i++;
     }
-    if (i < str.size() && std::isalpha(str[i])) {
-        col = std::toupper(str[i]);
+    bool has_col = false;
+    if (i < str.size() && std::isalpha(static_cast<unsigned char>(str[i]))) {
+        col = std::toupper(static_cast<unsigned char>(str[i]));
+        i++;
+        has_col = true;
+    }
+    if (!has_row || !has_col) {
+        throw std::invalid_argument("Invalid input: incorrect string, expected a number followed by a letter");
+    }
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
+        i++;
+    }
+    if (i < str.size()) {
+        throw std::invalid_argument("Invalid input: incorrect string with garbage characters");
     }
     pos = Position(row, col);
 }
