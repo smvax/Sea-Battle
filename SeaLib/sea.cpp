@@ -30,10 +30,7 @@ Position::Position(int row, char col) {
     _col = std::toupper(col) - 'A' + 1;
 }
 
-Position::Position(const Position& other) {
-    _row = other._row;
-    _col = other._col;
-}
+Position::Position(const Position& other) : _row(other._row), _col(other._col) {}
 
 Position::Position(const std::string& str) {
     parse(str, (*this));
