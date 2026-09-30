@@ -187,26 +187,24 @@ Ship& Ship::operator=(const Ship& ship) {
 }
 
 void parse(const std::string& str, Ship& ship) {
-    int row = 0;
-    char col = 0;
-    char dir = 0;
-    Direction direction;
-    size_t i = 0;
     int size = 0;
-    while (i < str.size() && std::isspace(str[i])) {
+    Direction direction;
+    char dir = 0;
+    size_t i = 0;
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
         i++;
     }
-    while (i < str.size() && std::isdigit(str[i])) {
+    while (i < str.size() && std::isdigit(static_cast<unsigned char>(str[i]))) {
         size = size * 10 + (str[i] - '0');
         i++;
     }
     if (size == 0) {
         throw std::logic_error("Invalid input: incorrect ship");
     }
-    while (i < str.size() && std::isspace(str[i])) {
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
         i++;
     }
-    if (i < str.size() && std::isalpha(str[i])) {
+    if (i < str.size() && std::isalpha(static_cast<unsigned char>(str[i]))) {
         dir = str[i];
         if (dir == 'V' || dir == 'v') {
             direction = Direction::Vertical;
@@ -218,38 +216,20 @@ void parse(const std::string& str, Ship& ship) {
             throw std::logic_error("Invalid input: incorrect ship");
         }
         i++;
-        if (str[i] != ' ') {
+        if (i < str.size() && str[i] != ' ') {
             throw std::logic_error("Invalid input: incorrect ship");
         }
     }
     else {
         throw std::logic_error("Invalid input: incorrect ship");
     }
-    while (i < str.size() && std::isspace(str[i])) {
-        i++;
-    }
-    while (i < str.size() && std::isdigit(str[i])) {
-        row = row * 10 + (str[i] - '0');
-        i++;
-    }
-    while (i < str.size() && std::isspace(str[i])) {
-        i++;
-    }
-    if (i < str.size() && std::isalpha(str[i])) {
-        col = std::toupper(str[i]);
-        i++;
-    }
-    while (i < str.size() && std::isspace(str[i])) {
-        i++;
-    }
-    if (i != str.size()) {
-        throw std::logic_error("Invalid input: incorrect ship");
-    }
-
+    std::string remaining_str = str.substr(i);
+    Position pos;
     try {
-        ship = Ship(size, Position(row, col), Direction(direction));
+        parse(remaining_str, pos);
+        ship = Ship(size, pos, direction);
     }
-    catch (std::exception&) {
+    catch (const std::exception&) {
         throw std::logic_error("Invalid input: incorrect ship");
     }
 }
