@@ -6,13 +6,12 @@ const int Position::_max_row(10);
 const int Position::_max_col(10);
 
 Position::Position() {
-    static bool seeded = false;
-    if (!seeded) {
-        std::srand(static_cast<unsigned>(std::time(nullptr)));
-        seeded = true;
-    }
-    _row = std::rand() % _max_row + 1;
-    _col = std::rand() % _max_col + 1;
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<int> dist_row(1, _max_row);
+    static std::uniform_int_distribution<int> dist_col(1, _max_col);
+    _row = dist_row(gen);
+    _col = dist_col(gen);
 }
 
 Position::Position(int row, int col) {

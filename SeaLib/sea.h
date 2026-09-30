@@ -4,6 +4,7 @@
 #include <string>
 #include <ctime>
 #include <clocale>
+#include <random>
 
 enum Direction { Horizontal, Vertical };
 
