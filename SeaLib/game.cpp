@@ -68,7 +68,7 @@ const int Player::_max_ships_counts[CELL_COUNT] = { 4, 3, 2, 1 };
 
 Game::Game() : _user(), _computer(), _comp_row(0), _comp_col(0), _comp_diag(0) {}
 
-void Game::user_init(std::string ship_input) {
+void Game::user_init(const std::string& ship_input) {
     try {
         _user.set_ship(Ship(ship_input));
     }
@@ -77,7 +77,7 @@ void Game::user_init(std::string ship_input) {
     }
 }
 
-void Game::computer_init(std::string ship_input) {
+void Game::computer_init(const std::string& ship_input) {
     try {
         _computer.set_ship(Ship(ship_input));
     }
@@ -86,7 +86,7 @@ void Game::computer_init(std::string ship_input) {
     }
 }
 
-State Game::user_move(std::string input) {
+State Game::user_move(const std::string& input) {
     State result;
     try {
         Position pos(input);

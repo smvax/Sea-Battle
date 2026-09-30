@@ -31,11 +31,11 @@ protected: //for GTests
     int _comp_col = 0;
     int _comp_diag = 0;
 
-    void user_init(std::string);
-    void computer_init(std::string);
+    void user_init(const std::string&);
+    void computer_init(const std::string&);
     inline bool is_end() noexcept;
     void show_game_window() noexcept;
-    State user_move(std::string);
+    State user_move(const std::string&);
     State computer_move();
 
 public:
