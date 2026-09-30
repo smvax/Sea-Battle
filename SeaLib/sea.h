@@ -31,10 +31,10 @@ public:
     inline int col() const noexcept {
         return _col;
     }
-    inline int max_row() const noexcept { //for GTests
+    inline static int max_row() noexcept { //for GTests
         return _max_row;
     }
-    inline int max_col() const noexcept { //for GTests
+    inline static int max_col() noexcept { //for GTests
         return _max_col;
     }
     inline char char_col() const noexcept {

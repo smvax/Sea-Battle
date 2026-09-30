@@ -260,7 +260,7 @@ bool is_collision(int size, Position position, Direction direction) {
 
 //---------GAMEFIELD
 
-GameField::GameField() : _n(10), _m(10) {
+GameField::GameField() : _n(Position::max_row()), _m(Position::max_col()) {
     _field = new char* [_n];
     for (int i = 0; i < _n; i++) {
         _field[i] = new char[_m];
