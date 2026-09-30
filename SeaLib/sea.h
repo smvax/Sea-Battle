@@ -83,6 +83,9 @@ class Ship {
     Position _position;
     Direction _direction;
 
+    static const int _min_ship_size;
+    static const int _max_ship_size;
+
 public:
     Ship() = delete;
     Ship(const Ship&) = delete;

@@ -92,6 +92,9 @@ bool is_collision(char col) {
 
 //---------SHIP---------------
 
+const int Ship::_min_ship_size(1);
+const int Ship::_max_ship_size(4);
+
 Ship::Ship(int size, Position position, Direction direction) : _size(size), _position(position), _direction(direction) {
     if (is_collision(size, position, direction)) {
         throw std::logic_error("Invalid input: incorrect ship");
@@ -257,7 +260,7 @@ void parse(const std::string& str, Ship& ship) {
 }
 
 bool is_collision(int size, Position position, Direction direction) {
-    if (size < 1 || size > 4) {
+    if (size < Ship::_min_ship_size || size > Ship::_max_ship_size) {
         return true;
     }
 
