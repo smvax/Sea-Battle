@@ -2,8 +2,8 @@
 
 //-------------POSITION-------------
 
-const int Position::_max_row(10);
-const int Position::_max_col(10);
+const int Position::_max_row{10};
+const int Position::_max_col{10};
 
 Position::Position() {
     static std::random_device rd;
@@ -92,8 +92,8 @@ bool is_collision(char col) {
 
 //---------SHIP---------------
 
-const int Ship::_min_ship_size(1);
-const int Ship::_max_ship_size(4);
+const int Ship::_min_ship_size{1};
+const int Ship::_max_ship_size{4};
 
 Ship::Ship(int size, Position position, Direction direction) : _size(size), _position(position), _direction(direction) {
     if (is_collision(size, position, direction)) {

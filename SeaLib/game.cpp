@@ -55,7 +55,7 @@ inline bool Player::check_lose() const noexcept {
 
 bool Player::check_ready() const noexcept {
     for (size_t i = 0; i < CELL_COUNT; i++) {
-        if (_ships_counts[i] != _max_ships_counts[i]) {
+        if (_ships_counts[i] < _max_ships_counts[i]) {
             return false;
         }
     }
