@@ -15,7 +15,7 @@ public:
 
     void set_ship(const Ship&);
     State set_action(int row, char col);
-    void show_field(bool hide_ships = false) const;
+    void show_field(bool hide_ships = false) const noexcept;
     inline bool check_lose() const noexcept;
     bool check_ready() const noexcept;
 };

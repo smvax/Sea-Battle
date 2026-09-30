@@ -35,7 +35,7 @@ State Player::set_action(int row, char col) {
     return result;
 }
 
-void Player::show_field(bool hide_ships) const {
+void Player::show_field(bool hide_ships) const noexcept {
     std::cout << to_string(_gamefield, hide_ships) << std::endl;
     std::cout << "Ships Left:" << std::endl;
     std::cout << "* - " << _ships_counts[0] << " "
