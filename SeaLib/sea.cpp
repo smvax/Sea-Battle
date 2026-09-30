@@ -139,12 +139,6 @@ void Ship::row(int row) {
 }
 
 void Ship::col(int col) {
-    if (col >= 'A' && col <= 'Z') {
-        col = col - 'A' + 1;
-    }
-    else if (col >= 'a' && col <= 'z') {
-        col = col - 'a' + 1;
-    }
     try {
         Position new_pos(_position.row(), col);
         if (is_collision(_size, new_pos, _direction)) {
@@ -158,12 +152,13 @@ void Ship::col(int col) {
 }
 
 void Ship::col(char col) {
-    try {
-        Position new_pos(_position.row(), col);
-        if (is_collision(_size, new_pos, _direction)) {
-            throw std::logic_error("Invalid input: incorrect ship");
+    try { //redirections to int setter:
+        if (col >= 'A' && col <= 'Z') {
+            this->col(col - 'A' + 1);
         }
-        _position = new_pos;
+        else if (col >= 'a' && col <= 'z') {
+            this->col(col - 'a' + 1);
+        }
     }
     catch (std::exception&) {
         throw std::logic_error("Invalid input: incorrect ship");
