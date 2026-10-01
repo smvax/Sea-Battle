@@ -1,0 +1,416 @@
+﻿#include "sea.h"
+
+//-------------POSITION-------------
+
+const int Position::_max_row{10};
+const int Position::_max_col{10};
+
+Position::Position() {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<int> dist_row(1, _max_row);
+    static std::uniform_int_distribution<int> dist_col(1, _max_col);
+    _row = dist_row(gen);
+    _col = dist_col(gen);
+}
+
+Position::Position(int row, int col) {
+    if (is_collision(row) || is_collision(static_cast<char>('A' + col - 1))) {
+        throw std::logic_error("Invalid input: incorrect position");
+    }
+    _row = row;
+    _col = col;
+}
+
+Position::Position(int row, char col) {
+    if (is_collision(row) || is_collision(col)) {
+        throw std::logic_error("Invalid input: incorrect position");
+    }
+    _row = row;
+    _col = std::toupper(col) - 'A' + 1;
+}
+
+Position::Position(const Position& other) : _row(other._row), _col(other._col) {}
+
+Position::Position(const std::string& str) {
+    parse(str, (*this));
+}
+
+void parse(const std::string& str, Position& pos) {
+    int row = 0;
+    char col = 0;
+    size_t i = 0;
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
+        i++;
+    }
+    bool has_row = false;
+    while (i < str.size() && std::isdigit(static_cast<unsigned char>(str[i]))) {
+        row = row * 10 + (str[i] - '0');
+        i++;
+        has_row = true;
+    }
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
+        i++;
+    }
+    bool has_col = false;
+    if (i < str.size() && std::isalpha(static_cast<unsigned char>(str[i]))) {
+        col = std::toupper(static_cast<unsigned char>(str[i]));
+        i++;
+        has_col = true;
+    }
+    if (!has_row || !has_col) {
+        throw std::invalid_argument("Invalid input: incorrect string, expected a number followed by a letter");
+    }
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
+        i++;
+    }
+    if (i < str.size()) {
+        throw std::invalid_argument("Invalid input: incorrect string with garbage characters");
+    }
+    pos = Position(row, col);
+}
+
+std::string to_string(const Position& p) {
+    std::string result;
+    result.append("(");
+    result.append(std::to_string(p._row));
+    result.append(", ");
+    result.append(std::to_string(p._col));
+    result.append(")");
+    return result;
+}
+
+bool is_collision(int row) {
+    return (row < 1 || row > Position::_max_row);
+}
+
+bool is_collision(char col) {
+    char upper_col = std::toupper(static_cast<unsigned char>(col));
+    int col_num = upper_col - 'A' + 1;
+    return (col_num < 1 || col_num > Position::_max_col);
+}
+
+//---------SHIP---------------
+
+const int Ship::_min_ship_size{1};
+const int Ship::_max_ship_size{4};
+
+Ship::Ship(int size, Position position, Direction direction) : _size(size), _position(position), _direction(direction) {
+    if (is_collision(size, position, direction)) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+}
+
+Ship::Ship(int size, char direction, int row, char col) {
+    try {
+        _position = Position(row, col);
+    }
+    catch (std::exception&) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+    Direction dir;
+    char d = std::toupper(static_cast<unsigned char>(direction));
+    if (d == 'H') dir = Direction::Horizontal;
+    else if (d == 'V') dir = Direction::Vertical;
+    else throw std::logic_error("Invalid input: incorrect ship");
+
+    if (is_collision(size, _position, dir)) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+    _size = size;
+    _direction = dir;
+}
+
+Ship::Ship(const std::string& str) {
+    parse(str, *this);
+}
+
+void Ship::row(int row) {
+    try {
+        Position new_pos(row, _position.col());
+        if (is_collision(_size, new_pos, _direction)) {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+        _position = new_pos;
+    }
+    catch (std::exception&) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+}
+
+void Ship::col(int col) {
+    try {
+        Position new_pos(_position.row(), col);
+        if (is_collision(_size, new_pos, _direction)) {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+        _position = new_pos;
+    }
+    catch (std::exception&) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+}
+
+void Ship::col(char col) {
+    try { //redirections to int setter:
+        if (col >= 'A' && col <= 'Z') {
+            this->col(col - 'A' + 1);
+        }
+        else if (col >= 'a' && col <= 'z') {
+            this->col(col - 'a' + 1);
+        }
+    }
+    catch (std::exception&) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+}
+
+
+void Ship::direction(char direction) {
+    Direction dir;
+    char d = std::toupper(static_cast<unsigned char>(direction));
+    if (d == 'H') dir = Direction::Horizontal;
+    else if (d == 'V') dir = Direction::Vertical;
+    else throw std::logic_error("Invalid input: incorrect ship");
+
+    if (is_collision(_size, _position, dir)) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+    _direction = dir;
+}
+
+Ship& Ship::operator=(const Ship& ship) {
+    _size = ship._size;
+    _position = ship._position;
+    _direction = ship._direction;
+    return *this;
+}
+
+void parse(const std::string& str, Ship& ship) {
+    int size = 0;
+    Direction direction;
+    char dir = 0;
+    size_t i = 0;
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
+        i++;
+    }
+    while (i < str.size() && std::isdigit(static_cast<unsigned char>(str[i]))) {
+        size = size * 10 + (str[i] - '0');
+        i++;
+    }
+    if (size == 0) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+    while (i < str.size() && std::isspace(static_cast<unsigned char>(str[i]))) {
+        i++;
+    }
+    if (i < str.size() && std::isalpha(static_cast<unsigned char>(str[i]))) {
+        dir = str[i];
+        if (dir == 'V' || dir == 'v') {
+            direction = Direction::Vertical;
+        }
+        else if (dir == 'H' || dir == 'h') {
+            direction = Direction::Horizontal;
+        }
+        else {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+        i++;
+        if (i < str.size() && str[i] != ' ') {
+            throw std::logic_error("Invalid input: incorrect ship");
+        }
+    }
+    else {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+    std::string remaining_str = str.substr(i);
+    Position pos;
+    try {
+        parse(remaining_str, pos);
+        ship = Ship(size, pos, direction);
+    }
+    catch (const std::exception&) {
+        throw std::logic_error("Invalid input: incorrect ship");
+    }
+}
+
+bool is_collision(int size, Position position, Direction direction) {
+    if (size < Ship::_min_ship_size || size > Ship::_max_ship_size) {
+        return true;
+    }
+    int start_row = position.row();
+    int start_col = position.col();
+    try {
+        Position start_pos(start_row, start_col);
+        if (direction == Direction::Horizontal) {
+            Position pos(start_row, start_col + size - 1);
+        }
+        else if (direction == Direction::Vertical) {
+            Position pos(start_row + size - 1, start_col);
+        }
+    }
+    catch (std::exception&) {
+        return true;
+    }
+    return false;
+}
+
+//---------GAMEFIELD
+
+GameField::GameField() : _n(Position::max_row()), _m(Position::max_col()) {
+    _field = new char* [_n];
+    for (int i = 0; i < _n; i++) {
+        _field[i] = new char[_m];
+        for (int j = 0; j < _m; j++) {
+            _field[i][j] = ' ';
+        }
+    }
+}
+
+GameField::~GameField() {
+    for (int i = 0; i < _n; i++) {
+        delete[] _field[i];
+    }
+    delete[] _field;
+}
+
+void GameField::set(const Ship& ship) {
+    if (is_collision(*this, ship)) {
+        throw std::logic_error("Invalid input: incorrect field");
+    }
+    int row = ship.row() - 1;
+    int col = ship.col() - 1;
+    int size = ship.size();
+    Direction dir = ship.direction();
+    for (int i = 0; i < size; i++) {
+        if (dir == Direction::Horizontal) {
+            _field[row][col + i] = '*';
+        }
+        else {
+            _field[row + i][col] = '*';
+        }
+    }
+}
+
+State GameField::set(int row, char col) {
+    if (is_collision(row) || is_collision(col)) {
+        throw std::logic_error("Invalid input: incorrect move");
+    }
+    int r = row - 1;
+    int c = std::toupper(col) - 'A';
+    if (_field[r][c] == '.' || _field[r][c] == 'X') {
+        throw std::logic_error("Invalid input: incorrect move");
+    }
+    if (_field[r][c] == ' ') {
+        _field[r][c] = '.';
+        return State::Missed;
+    }
+    if (_field[r][c] == '*') {
+        _field[r][c] = 'X';
+        int shipSize = check_destroy(r, c);
+        switch (shipSize) {
+        case 1:  return State::BoatDestroyed;
+        case 2:  return State::DestroyersDestroyed;
+        case 3:  return State::CruisersDestroyed;
+        case 4:  return State::BattleshipDestroyed;
+        default: return State::Hit;
+        }
+    }
+    return State::Missed;
+}
+
+int GameField::check_destroy(int row, int col) {
+    int start_c = col, end_c = col;
+    while (start_c > 0 && (_field[row][start_c - 1] == 'X' || _field[row][start_c - 1] == '*')) start_c--;
+    while (end_c < _m - 1 && (_field[row][end_c + 1] == 'X' || _field[row][end_c + 1] == '*')) end_c++;
+    int start_r = row, end_r = row;
+    while (start_r > 0 && (_field[start_r - 1][col] == 'X' || _field[start_r - 1][col] == '*')) start_r--;
+    while (end_r < _n - 1 && (_field[end_r + 1][col] == 'X' || _field[end_r + 1][col] == '*')) end_r++;
+    int size = 1;
+    bool allDestroyed = true;
+    if (end_c > start_c) {
+        size = end_c - start_c + 1;
+        for (int c = start_c; c <= end_c; c++) {
+            if (_field[row][c] == '*') {
+                allDestroyed = false;
+            }
+        }
+    }
+    else if (end_r > start_r) {
+        size = end_r - start_r + 1;
+        for (int r = start_r; r <= end_r; r++) {
+            if (_field[r][col] == '*') {
+                allDestroyed = false;
+            }
+        }
+    }
+    else {
+        size = 1;
+        if (_field[row][col] == '*') {
+            allDestroyed = false;
+        }
+    }
+    return allDestroyed ? size : 0;
+}
+
+std::string to_string(const GameField& field, bool show) {
+    std::string result = "  |";
+    for (int j = 0; j < field._m; j++) {
+        result += (char)('A' + j);
+        if (j < field._m - 1) result += ' ';
+    }
+    result += "|\n";
+    result += "  +";
+    for (int j = 0; j < field._m * 2 - 1; j++) {
+        result += '-';
+    }
+    result += "+\n";
+    for (int i = 0; i < field._n; i++) {
+        result += std::to_string(i + 1);
+        if (i + 1 < 10) {
+            result += ' ';
+        }
+        result += '|';
+        for (int j = 0; j < field._m; j++) {
+            char cell = field._field[i][j];
+            if (cell == '*' && !show) {
+                result += ' ';
+            }
+            else {
+                result += cell;
+            }
+            if (j < field._m - 1) result += '|';
+        }
+        result += "|\n";
+    }
+    result += "  +";
+    for (int j = 0; j < field._m * 2 - 1; j++) {
+        result += '-';
+    }
+    result += "+\n";
+    return result;
+}
+
+bool is_collision(const GameField& field, const Ship& ship) {
+    Direction dir = ship.direction();
+    if (is_collision(ship.size(), ship.position(), ship.direction())) {
+        return true;
+    }
+    int row = ship.row();
+    int col = ship.col();
+    int size = ship.size();
+    int min_r = row - 1;
+    int max_r = (dir == Direction::Vertical) ? (row + size) : (row + 1);
+    int min_c = col - 1;
+    int max_c = (dir == Direction::Horizontal) ? (col + size) : (col + 1);
+    for (int r = min_r; r <= max_r; r++) {
+        for (int c = min_c; c <= max_c; c++) {
+            if (!is_collision(row) && !is_collision(col)) {
+                if (field._field[r][c] == '*' || field._field[r][c] == 'X') {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
